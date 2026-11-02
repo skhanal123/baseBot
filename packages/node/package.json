@@ -1,0 +1,35 @@
+{
+  "name": "@basebot/node",
+  "version": "0.0.0",
+  "description": "Node.js backend SDK — adapters, cache, and server bootstrap for baseBot",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node --input-type=module -e \"import { cpSync } from 'node:fs'; cpSync('src/adapters/postgres/migrations', 'dist/adapters/postgres/migrations', { recursive: true })\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run",
+    "migrate": "tsx src/adapters/postgres/migrate-cli.ts"
+  },
+  "dependencies": {
+    "@basebot/core": "workspace:*",
+    "@fastify/cors": "^10.0.2",
+    "bullmq": "^5.41.3",
+    "fastify": "^5.2.1",
+    "ioredis": "^5.6.0",
+    "openai": "^4.86.2",
+    "pg": "^8.14.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.11",
+    "tsx": "^4.19.3"
+  }
+}

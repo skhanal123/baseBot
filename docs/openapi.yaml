@@ -1,0 +1,846 @@
+openapi: 3.0.3
+info:
+  title: baseBot API
+  version: 1.0.0
+  description: Embeddable AI chat framework REST API. Generated from @basebot/core schemas.
+servers:
+  - url: http://localhost:3000
+    description: Local development
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          enum: &a1
+            - STREAM_TOKEN_INVALID
+            - STREAM_TOKEN_EXPIRED
+            - THREAD_ACCESS_DENIED
+            - THREAD_LIMIT_EXCEEDED
+            - VALIDATION_ERROR
+            - HOOK_REJECTED
+            - INTERNAL_ERROR
+        message:
+          type: string
+        correlation_id:
+          type: string
+      required:
+        - code
+        - message
+  parameters: {}
+paths:
+  /v1/threads:
+    post:
+      summary: Create thread
+      tags:
+        - Threads
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 256
+              required:
+                - user_id
+      responses:
+        "201":
+          description: Thread created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  thread_id:
+                    type: string
+                    format: uuid
+                required:
+                  - thread_id
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "401":
+          description: Stream token invalid or expired
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "403":
+          description: Thread access denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "409":
+          description: Thread limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "422":
+          description: Hook rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+    get:
+      summary: List threads by user
+      tags:
+        - Threads
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            maxLength: 256
+          required: true
+          name: user_id
+          in: query
+      responses:
+        "200":
+          description: Thread list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  threads:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        user_id:
+                          type: string
+                          minLength: 1
+                          maxLength: 256
+                        created_at:
+                          type: string
+                          format: date-time
+                        last_message_at:
+                          type: string
+                          format: date-time
+                        status:
+                          type: string
+                          enum:
+                            - active
+                            - archived
+                      required:
+                        - id
+                        - user_id
+                        - created_at
+                        - last_message_at
+                        - status
+                required:
+                  - threads
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "401":
+          description: Stream token invalid or expired
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "403":
+          description: Thread access denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "409":
+          description: Thread limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "422":
+          description: Hook rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+  /v1/threads/{thread_id}/messages:
+    post:
+      summary: Send user message
+      tags:
+        - Messages
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          required: true
+          name: thread_id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 256
+                content:
+                  type: string
+                  minLength: 1
+              required:
+                - user_id
+                - content
+      responses:
+        "202":
+          description: Message accepted for async processing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                  message_id:
+                    type: string
+                    format: uuid
+                  stream_token:
+                    type: string
+                  stream_expires_at:
+                    type: string
+                    format: date-time
+                required:
+                  - job_id
+                  - message_id
+                  - stream_token
+                  - stream_expires_at
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "401":
+          description: Stream token invalid or expired
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "403":
+          description: Thread access denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "409":
+          description: Thread limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "422":
+          description: Hook rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+    get:
+      summary: Paginated message history
+      tags:
+        - Messages
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          required: true
+          name: thread_id
+          in: path
+        - schema:
+            type: string
+            minLength: 1
+            maxLength: 256
+          required: true
+          name: user_id
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: cursor
+          in: query
+        - schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+          required: false
+          name: page_size
+          in: query
+      responses:
+        "200":
+          description: Message history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        thread_id:
+                          type: string
+                          format: uuid
+                        user_id:
+                          type: string
+                          minLength: 1
+                          maxLength: 256
+                        role:
+                          type: string
+                          enum:
+                            - user
+                            - assistant
+                            - tool
+                        content:
+                          type: string
+                        timestamp:
+                          type: string
+                          format: date-time
+                        metadata:
+                          type: object
+                          additionalProperties:
+                            nullable: true
+                      required:
+                        - id
+                        - thread_id
+                        - user_id
+                        - role
+                        - content
+                        - timestamp
+                        - metadata
+                  next_cursor:
+                    type: string
+                    nullable: true
+                required:
+                  - messages
+                  - next_cursor
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "401":
+          description: Stream token invalid or expired
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "403":
+          description: Thread access denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "409":
+          description: Thread limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "422":
+          description: Hook rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+  /v1/stream/{job_id}:
+    get:
+      summary: SSE stream for async job
+      tags:
+        - Stream
+      parameters:
+        - schema:
+            type: string
+          required: true
+          name: job_id
+          in: path
+        - schema:
+            type: string
+            description: Signed stream token from 202 response
+          required: true
+          description: Signed stream token from 202 response
+          name: token
+          in: query
+      responses:
+        "200":
+          description: Server-sent events stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: "SSE events: message.start, message.delta, message.end, error"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "401":
+          description: Stream token invalid or expired
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "403":
+          description: Thread access denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "409":
+          description: Thread limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "422":
+          description: Hook rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: *a1
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                required:
+                  - code
+                  - message
+  /health:
+    get:
+      summary: Liveness probe
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - ok
+                required:
+                  - status
+  /health/ready:
+    get:
+      summary: Readiness probe (Redis + DB)
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Dependencies healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - ok
+                  redis:
+                    type: boolean
+                  database:
+                    type: boolean
+                required:
+                  - status
+                  - redis
+                  - database
+        "503":
+          description: One or more dependencies unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - degraded
+                  redis:
+                    type: boolean
+                  database:
+                    type: boolean
+                required:
+                  - status
+                  - redis
+                  - database

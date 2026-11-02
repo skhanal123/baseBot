@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+.cursor/
+.vite/
+*.tsbuildinfo
+
+# Local planning docs (remove these lines to publish PRD/TDD on GitHub)
+docs/PRD.md
+docs/TDD.md

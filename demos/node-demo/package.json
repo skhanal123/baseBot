@@ -1,0 +1,19 @@
+{
+  "name": "@basebot/example-node-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx server.ts",
+    "dev": "tsx watch server.ts"
+  },
+  "dependencies": {
+    "@basebot/core": "workspace:*",
+    "@basebot/node": "workspace:*",
+    "ioredis": "^5.6.0",
+    "pg": "^8.14.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.11",
+    "tsx": "^4.19.3"
+  }
+}
