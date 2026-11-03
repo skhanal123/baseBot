@@ -31,7 +31,8 @@ export type { InProcessToolHandler, RegisteredTool } from './tools/runner.js';
 export { MockLLMAdapter } from './llm/mock-adapter.js';
 export { OpenAIAdapter } from './llm/openai-adapter.js';
 export { createLLMAdapter } from './llm/factory.js';
-export type { LLMAdapter, LLMConfig, LLMMessage, LLMChunk } from './llm/types.js';
+export type { LLMAdapter, LLMConfig, LLMMessage, LLMChunk, LLMProvider } from './llm/types.js';
+export { runProviderConformance, collectLLMChunks } from './llm/conformance.js';
 
 export { createStreamToken, verifyStreamToken } from './stream/stream-token.js';
 export type { StreamTokenPayload } from './stream/stream-token.js';

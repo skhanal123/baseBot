@@ -5,6 +5,7 @@ import {
   createServer,
   registerTool,
   runMigrations,
+  type LLMConfig,
 } from '@basebot/node';
 import { Redis } from 'ioredis';
 import { Pool } from 'pg';
@@ -37,14 +38,73 @@ registerTool(
   },
 );
 
-if (process.env.OPENAI_API_KEY) {
-  configureLLM({ provider: 'openai', model: 'gpt-4o-mini' });
-} else {
-  configureLLM({
-    provider: 'mock',
-    mockResponse: 'Your order shipped yesterday. (mock LLM — set OPENAI_API_KEY for real responses)',
-  });
+function optionalModel(envValue: string | undefined): Pick<LLMConfig, 'model'> {
+  return envValue ? { model: envValue } : {};
 }
+
+function resolveLLMConfig(): LLMConfig {
+  const provider = process.env.LLM_PROVIDER?.trim().toLowerCase();
+
+  if (provider === 'gemini') {
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error('LLM_PROVIDER=gemini requires GEMINI_API_KEY');
+    }
+    return { provider: 'gemini', ...optionalModel(process.env.GEMINI_MODEL) };
+  }
+
+  if (provider === 'claude') {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error('LLM_PROVIDER=claude requires ANTHROPIC_API_KEY');
+    }
+    return { provider: 'claude', ...optionalModel(process.env.ANTHROPIC_MODEL) };
+  }
+
+  if (provider === 'deepseek') {
+    if (!process.env.DEEPSEEK_API_KEY) {
+      throw new Error('LLM_PROVIDER=deepseek requires DEEPSEEK_API_KEY');
+    }
+    return { provider: 'deepseek', ...optionalModel(process.env.DEEPSEEK_MODEL) };
+  }
+
+  if (provider === 'openai') {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('LLM_PROVIDER=openai requires OPENAI_API_KEY');
+    }
+    return {
+      provider: 'openai',
+      model: process.env.OPENAI_MODEL ?? 'gpt-4o-mini',
+    };
+  }
+
+  if (provider === 'mock') {
+    return {
+      provider: 'mock',
+      mockResponse:
+        'Your order shipped yesterday. (mock LLM — set OPENAI_API_KEY or LLM_PROVIDER + provider API key)',
+    };
+  }
+
+  if (provider) {
+    throw new Error(
+      `Unknown LLM_PROVIDER "${provider}". Use openai, gemini, claude, deepseek, or mock.`,
+    );
+  }
+
+  if (process.env.OPENAI_API_KEY) {
+    return {
+      provider: 'openai',
+      model: process.env.OPENAI_MODEL ?? 'gpt-4o-mini',
+    };
+  }
+
+  return {
+    provider: 'mock',
+    mockResponse:
+      'Your order shipped yesterday. (mock LLM — set OPENAI_API_KEY or LLM_PROVIDER + provider API key)',
+  };
+}
+
+configureLLM(resolveLLMConfig());
 
 const pool = new Pool({ connectionString: databaseUrl });
 const redis = new Redis(redisUrl, { maxRetriesPerRequest: null });

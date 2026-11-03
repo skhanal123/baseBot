@@ -33,11 +33,11 @@ function toOpenAiMessage(message: LLMMessage): ChatCompletionMessageParam {
 }
 
 export class OpenAIAdapter implements LLMAdapter {
-  private readonly client: OpenAI;
+  protected readonly client: OpenAI;
   private readonly model: string;
 
-  constructor(apiKey: string, model = 'gpt-4o-mini') {
-    this.client = new OpenAI({ apiKey });
+  constructor(apiKey: string, model = 'gpt-4o-mini', baseURL?: string, client?: OpenAI) {
+    this.client = client ?? new OpenAI({ apiKey, baseURL });
     this.model = model;
   }
 

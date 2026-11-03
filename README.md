@@ -58,7 +58,7 @@ Runnable reference apps live under **`demos/`** (`node-demo`, `react-demo`), wir
    cp .env.example .env
    ```
 
-   Defaults match `docker-compose.yml` (Postgres on port **5434**). Set `OPENAI_API_KEY` for real LLM responses; otherwise the demo uses a mock provider.
+   Defaults match `docker-compose.yml` (Postgres on port **5434**). Set `OPENAI_API_KEY` for real LLM responses; otherwise the demo uses a mock provider. For other providers, set `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, or `DEEPSEEK_API_KEY` and call `configureLLM({ provider: 'gemini' | 'claude' | 'deepseek', model?: '...' })`.
 
 3. **Install, build, migrate**
 

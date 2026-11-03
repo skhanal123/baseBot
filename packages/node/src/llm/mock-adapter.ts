@@ -12,12 +12,13 @@ export class MockLLMAdapter implements LLMAdapter {
   private readonly ttftMs: number;
   private readonly response: string;
   private readonly toolCalls: Array<{ name: string; arguments: Record<string, unknown> }>;
-  private streamInvocations = 0;
+  private toolCallStreamsRemaining: number;
 
   constructor(options: MockLLMAdapterOptions = {}) {
     this.ttftMs = options.ttftMs ?? 200;
     this.response = options.response ?? 'This is a mock assistant response.';
     this.toolCalls = options.toolCalls ?? [];
+    this.toolCallStreamsRemaining = this.toolCalls.length > 0 ? 1 : 0;
   }
 
   async *completeStream(
@@ -26,14 +27,16 @@ export class MockLLMAdapter implements LLMAdapter {
     options: LLMCompleteOptions,
   ): AsyncIterable<LLMChunk> {
     void messages;
-    void tools;
     void options;
     await new Promise((resolve) => setTimeout(resolve, this.ttftMs));
 
-    this.streamInvocations++;
-    const toolCallsThisStream = this.streamInvocations === 1 ? this.toolCalls : [];
+    const shouldEmitToolCalls =
+      tools.length > 0 && this.toolCallStreamsRemaining > 0 && this.toolCalls.length > 0;
+    if (shouldEmitToolCalls) {
+      this.toolCallStreamsRemaining -= 1;
+    }
 
-    for (const tc of toolCallsThisStream) {
+    for (const tc of shouldEmitToolCalls ? this.toolCalls : []) {
       yield {
         type: 'tool_call',
         toolCall: {

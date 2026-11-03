@@ -33,7 +33,7 @@ export interface LLMAdapter {
   ): AsyncIterable<LLMChunk>;
 }
 
-export type LLMProvider = 'openai' | 'mock';
+export type LLMProvider = 'openai' | 'gemini' | 'claude' | 'deepseek' | 'mock';
 
 export interface LLMConfig {
   provider: LLMProvider;
