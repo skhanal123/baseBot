@@ -1,6 +1,6 @@
 import type { DurableStoreAdapter, Message, MessageCacheAdapter } from '@basebot/core';
 
-import type { PostgresAdapter } from '../adapters/postgres/postgres-adapter.js';
+import { asMessageCacheBackfillStore } from '../adapters/durable/cache-backfill-store.js';
 
 export interface ContextManagerOptions {
   store: DurableStoreAdapter;
@@ -33,12 +33,12 @@ export class ContextManager {
       return cached;
     }
 
-    const postgres = this.store as PostgresAdapter;
-    if (typeof postgres.getRecentMessages !== 'function') {
+    const backfillStore = asMessageCacheBackfillStore(this.store);
+    if (!backfillStore) {
       return [];
     }
 
-    const fromDb = await postgres.getRecentMessages(threadId, this.messageLimit);
+    const fromDb = await backfillStore.getRecentMessages(threadId, this.messageLimit);
     if (fromDb.length > 0) {
       await this.cache.setMessages(threadId, fromDb);
     }

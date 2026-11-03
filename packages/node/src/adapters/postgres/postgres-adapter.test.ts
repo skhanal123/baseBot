@@ -1,14 +1,10 @@
-import {
-  BaseBotError,
-  ErrorCode,
-  MAX_THREADS_PER_USER,
-  type Message,
-} from '@basebot/core';
+import { BaseBotError, ErrorCode, type Message } from '@basebot/core';
 import { randomUUID } from 'node:crypto';
 import { Redis } from 'ioredis';
 import { Pool } from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
+import { registerDurableStoreAdapterTests } from '../durable/durable-store.test-suite.js';
 import { createPostgresAdapter } from './postgres-adapter.js';
 import { runMigrations } from './migrate.js';
 import { createRedisMessageCache } from '../redis/message-cache.js';
@@ -26,77 +22,20 @@ describeIntegration('PostgresAdapter', () => {
     await pool.query('TRUNCATE messages, threads RESTART IDENTITY CASCADE');
   });
 
+  beforeEach(async () => {
+    await pool.query('TRUNCATE messages, threads RESTART IDENTITY CASCADE');
+  });
+
   afterAll(async () => {
     await pool.end();
   });
 
-  it('creates and retrieves threads', async () => {
-    const userId = `usr_${randomUUID()}`;
-    const thread = await adapter.createThread(userId);
-    expect(thread.user_id).toBe(userId);
-    expect(thread.status).toBe('active');
-
-    const fetched = await adapter.getThread(thread.id);
-    expect(fetched?.id).toBe(thread.id);
-  });
-
-  it('enforces 5-thread limit per user', async () => {
-    const userId = `usr_${randomUUID()}`;
-    for (let i = 0; i < MAX_THREADS_PER_USER; i++) {
-      await adapter.createThread(userId);
-    }
-
-    await expect(adapter.createThread(userId)).rejects.toMatchObject({
-      code: ErrorCode.THREAD_LIMIT_EXCEEDED,
-    });
-  });
-
-  it('inserts messages and paginates history', async () => {
-    const userId = `usr_${randomUUID()}`;
-    const thread = await adapter.createThread(userId);
-
-    const ids: string[] = [];
-    for (let i = 0; i < 3; i++) {
-      const msg = await adapter.insertMessage({
-        id: randomUUID(),
-        thread_id: thread.id,
-        user_id: userId,
-        role: 'user',
-        content: `message ${i}`,
-        metadata: {},
-      });
-      ids.push(msg.id);
-    }
-
-    const page = await adapter.listMessages(thread.id, null, 2);
-    expect(page.messages).toHaveLength(2);
-    expect(page.nextCursor).not.toBeNull();
-
-    const page2 = await adapter.listMessages(thread.id, page.nextCursor, 2);
-    expect(page2.messages).toHaveLength(1);
-    expect(page2.nextCursor).toBeNull();
-  });
-
-  it('loads recent messages for cache backfill', async () => {
-    const userId = `usr_${randomUUID()}`;
-    const thread = await adapter.createThread(userId);
-
-    for (let i = 0; i < 10; i++) {
-      await adapter.insertMessage({
-        id: randomUUID(),
-        thread_id: thread.id,
-        user_id: userId,
-        role: 'user',
-        content: `msg ${i}`,
-        metadata: {},
-      });
-    }
-
-    const recent = await adapter.getRecentMessages(thread.id, 8);
-    expect(recent).toHaveLength(8);
-    expect(recent[0]?.content).toBe('msg 2');
-    expect(recent[7]?.content).toBe('msg 9');
-  });
+  registerDurableStoreAdapterTests(() => ({
+    adapter,
+    reset: async () => {
+      await pool.query('TRUNCATE messages, threads RESTART IDENTITY CASCADE');
+    },
+  }));
 });
 
 describeIntegration('RedisMessageCache', () => {

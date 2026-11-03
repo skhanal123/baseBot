@@ -22,7 +22,7 @@ flowchart TB
     Core -.->|shared contracts| API
     Widget -->|REST & streaming| API
 
-    Storage["Redis & Postgres"]
+    Storage["Redis & Postgres or Mongo"]
     Integrations["LLM & custom tools"]
     Worker --> Storage
     Worker --> Integrations
@@ -33,7 +33,7 @@ flowchart TB
 | Package | Description |
 |---------|-------------|
 | `@basebot/core` | Shared types, Zod schemas, error codes, OpenAPI generation |
-| `@basebot/node` | Fastify server, Postgres/Redis adapters, queue worker, LLM adapters |
+| `@basebot/node` | Fastify server, Postgres or Mongo durable store, Redis cache, queue worker, LLM adapters |
 | `@basebot/react` | `BaseBotChat` widget and HTTP client |
 
 Runnable reference apps live under **`demos/`** (`node-demo`, `react-demo`), wired to the root `pnpm demo` scripts.
@@ -42,7 +42,7 @@ Runnable reference apps live under **`demos/`** (`node-demo`, `react-demo`), wir
 
 - Node.js 20+
 - [pnpm](https://pnpm.io/) 9+
-- Docker (Postgres + Redis for local development)
+- Docker (Postgres + Redis for local development; Mongo optional via `DURABLE_STORE=mongo`)
 
 ## Quick start
 
@@ -58,7 +58,7 @@ Runnable reference apps live under **`demos/`** (`node-demo`, `react-demo`), wir
    cp .env.example .env
    ```
 
-   Defaults match `docker-compose.yml` (Postgres on port **5434**). Set `OPENAI_API_KEY` for real LLM responses; otherwise the demo uses a mock provider. For other providers, set `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, or `DEEPSEEK_API_KEY` and call `configureLLM({ provider: 'gemini' | 'claude' | 'deepseek', model?: '...' })`.
+   Defaults match `docker-compose.yml` (Postgres on port **5434**). **Postgres is the recommended durable store**; set `DURABLE_STORE=mongo` and `MONGODB_URL` to use MongoDB instead. Set `OPENAI_API_KEY` for real LLM responses; otherwise the demo uses a mock provider. For other providers, set `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, or `DEEPSEEK_API_KEY` and call `configureLLM({ provider: 'gemini' | 'claude' | 'deepseek', model?: '...' })`.
 
 3. **Install, build, migrate**
 

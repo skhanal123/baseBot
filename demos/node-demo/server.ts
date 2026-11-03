@@ -1,5 +1,7 @@
+import type { DurableStoreAdapter } from '@basebot/core';
 import {
   configureLLM,
+  connectMongo,
   createPostgresAdapter,
   createRedisMessageCache,
   createServer,
@@ -10,7 +12,9 @@ import {
 import { Redis } from 'ioredis';
 import { Pool } from 'pg';
 
+const durableStore = (process.env.DURABLE_STORE ?? 'postgres').trim().toLowerCase();
 const databaseUrl = process.env.DATABASE_URL ?? 'postgres://basebot:basebot@localhost:5434/basebot';
+const mongoUrl = process.env.MONGODB_URL ?? 'mongodb://localhost:27017/basebot';
 const redisUrl = process.env.REDIS_URL ?? 'redis://localhost:6379';
 const port = Number(process.env.PORT ?? 3000);
 
@@ -106,17 +110,52 @@ function resolveLLMConfig(): LLMConfig {
 
 configureLLM(resolveLLMConfig());
 
-const pool = new Pool({ connectionString: databaseUrl });
+async function createDurableStore(): Promise<{
+  store: DurableStoreAdapter;
+  onShutdown: () => Promise<void>;
+}> {
+  if (durableStore === 'mongo') {
+    const mongo = await connectMongo(mongoUrl);
+    return {
+      store: mongo.store,
+      onShutdown: () => mongo.close(),
+    };
+  }
+
+  if (durableStore !== 'postgres') {
+    throw new Error(`Unknown DURABLE_STORE "${durableStore}". Use postgres (default) or mongo.`);
+  }
+
+  const pool = new Pool({ connectionString: databaseUrl });
+  await runMigrations(pool);
+  return {
+    store: createPostgresAdapter(pool),
+    onShutdown: async () => {
+      await pool.end();
+    },
+  };
+}
+
+const { store, onShutdown } = await createDurableStore();
 const redis = new Redis(redisUrl, { maxRetriesPerRequest: null });
 
-await runMigrations(pool);
-
 const app = await createServer({
-  store: createPostgresAdapter(pool),
+  store,
   cache: createRedisMessageCache(redis),
   redis,
   streamSigningSecret: process.env.STREAM_SIGNING_SECRET,
 });
 
+process.on('SIGINT', () => {
+  void (async () => {
+    await app.close();
+    await redis.quit();
+    await onShutdown();
+    process.exit(0);
+  })();
+});
+
 await app.listen({ port, host: '0.0.0.0' });
-console.log(`baseBot demo server listening on http://localhost:${String(port)}`);
+console.log(
+  `baseBot demo server listening on http://localhost:${String(port)} (durable store: ${durableStore})`,
+);

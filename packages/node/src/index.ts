@@ -2,6 +2,14 @@ export { createPostgresAdapter, PostgresAdapter } from './adapters/postgres/post
 export type { PgPool } from './adapters/postgres/pg-pool.js';
 export type { PostgresAdapterOptions } from './adapters/postgres/postgres-adapter.js';
 export { runMigrations } from './adapters/postgres/migrate.js';
+export { createMongoAdapter, MongoAdapter } from './adapters/mongo/mongo-adapter.js';
+export type { MongoAdapterOptions } from './adapters/mongo/mongo-adapter.js';
+export { connectMongo } from './adapters/mongo/connect-mongo.js';
+export type { ConnectMongoOptions, MongoConnection } from './adapters/mongo/connect-mongo.js';
+export { ensureMongoIndexes } from './adapters/mongo/ensure-indexes.js';
+export type { MongoClient } from 'mongodb';
+export type { MessageCacheBackfillStore } from './adapters/durable/cache-backfill-store.js';
+export { asMessageCacheBackfillStore } from './adapters/durable/cache-backfill-store.js';
 export {
   createRedisMessageCache,
   RedisMessageCache,
