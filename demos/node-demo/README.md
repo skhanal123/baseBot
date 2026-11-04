@@ -16,7 +16,8 @@ Copy [`.env.example`](./.env.example) to the repo root as `.env` and export vars
 
 ## Run
 
-From repo root: `pnpm demo:setup` → `pnpm demo` (see root [README](../../README.md)).
+From repo root: `pnpm demo:setup` → `pnpm demo` → `pnpm demo:widget` (see root [README](../../README.md)).  
+Mongo durable store: set `DURABLE_STORE=mongo` in `.env` (compose `--profile mongo` is applied by `demo:setup`).
 
 HTTP tool sidecar mode: `TELECOM_TOOLS_HTTP=1 pnpm demo`.
 

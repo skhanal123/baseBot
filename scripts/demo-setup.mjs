@@ -1,10 +1,12 @@
 /**
- * Postgres demo happy path: infra → framework migrate → demo migrate → seed.
- * See docs/integration-guide.md (US-16).
+ * Local demo happy path (US-16 / US-18): infra → migrate (Postgres) → seed.
+ * Honors DURABLE_STORE: postgres (default) | mongo (compose --profile mongo).
  */
 import { spawnSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { planDemoSetup } from './lib/demo-setup-plan.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -20,9 +22,25 @@ function run(command, args) {
   }
 }
 
-run('docker', ['compose', 'up', '-d']);
-run('pnpm', ['migrate']);
-run('pnpm', ['--filter', '@basebot/example-node-demo', 'run', 'migrate:demo']);
-run('pnpm', ['seed:demo']);
+const plan = planDemoSetup(process.env);
 
-console.log('Demo setup complete. Run `pnpm demo` and `pnpm demo:widget`.');
+run('docker', plan.composeArgs);
+
+for (const step of plan.steps) {
+  if (step === 'migrate') {
+    run('pnpm', ['migrate']);
+  } else if (step === 'migrate:demo') {
+    run('pnpm', ['--filter', '@basebot/example-node-demo', 'run', 'migrate:demo']);
+  } else if (step === 'seed:demo') {
+    run('pnpm', ['seed:demo']);
+  } else {
+    throw new Error(`Unknown demo setup step: ${step}`);
+  }
+}
+
+const storeHint =
+  plan.store === 'mongo'
+    ? ' (DURABLE_STORE=mongo — vector search needs Atlas/mongot; CRM + thread store use local Mongo)'
+    : '';
+
+console.log(`Demo setup complete${storeHint}. Run \`pnpm demo\` and \`pnpm demo:widget\`.`);

@@ -50,36 +50,43 @@ Use root `pnpm demo` / `pnpm demo:widget`.
 
 ## Quick start
 
-1. **Start dependencies**
+One-command setup after env is configured (Postgres + pgvector path):
 
-   ```bash
-   docker compose up -d
-   ```
+```bash
+cp demos/node-demo/.env.example .env   # or cp .env.example .env
+# Set OPENAI_API_KEY, SERPER_API_KEY (and optional LLM_PROVIDER + provider keys)
 
-2. **Configure environment** (demo / integrator only — not used by `@basebot/node`)
+pnpm install
+pnpm build
+pnpm demo:setup    # compose up → migrate → seed (OPENAI_API_KEY required for seed)
+pnpm demo          # Node API on http://localhost:3000
+pnpm demo:widget   # React widget (Vite)
+```
 
-   ```bash
-   cp demos/node-demo/.env.example .env
-   ```
+In the widget, send a message (for example *What is my current plan?*) and confirm a **streamed reply** with **tool calls** (CRM / support manual / web search). Sample prompts: [integration guide — E2E verification](docs/integration-guide.md#e2e-tool-verification-manual).
 
-   Export variables in your shell (or use your host’s secret injection). Required for the telecom demo include `DATABASE_URL`, `REDIS_URL`, `STREAM_SIGNING_SECRET`, and `OPENAI_API_KEY` (embeddings + default chat). See `demos/node-demo/.env.example` for the full list. Chat provider selection uses `resolveLlmConfigFromEnv()` in the demo bootstrap, not inside the framework.
+### Environment (demo only)
 
-3. **Install, build, and set up the Postgres demo** (compose → framework migrate → demo migrate → seed)
+`@basebot/node` does not read deployment env vars; the telecom demo uses `loadDemoConfig()` and `resolveLlmConfigFromEnv()`. See `demos/node-demo/.env.example` for:
 
-   ```bash
-   pnpm install
-   pnpm build
-   pnpm demo:setup
-   ```
+| Variable | Purpose |
+|----------|---------|
+| `OPENAI_API_KEY` | Embeddings + default chat (`LLM_PROVIDER` unset) |
+| `SERPER_API_KEY` | `web_search` tool |
+| `LLM_PROVIDER` | Optional: `openai`, `gemini`, `claude`, `deepseek`, or `mock` (no live chat key) |
+| `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `DEEPSEEK_API_KEY` | Required when matching `LLM_PROVIDER` is set |
 
-   Or run the same steps manually: `docker compose up -d`, `pnpm migrate`, `pnpm --filter @basebot/example-node-demo run migrate:demo`, `pnpm seed:demo` (seed requires `OPENAI_API_KEY`).
+### Mongo durable store (optional)
 
-4. **Run demos** (set `OPENAI_API_KEY` and `SERPER_API_KEY` in `.env`)
+Local **vector** demos should stay on Postgres (pgvector). To exercise the **Mongo thread/message adapter** and telecom CRM on Mongo:
 
-   ```bash
-   pnpm demo          # Node API on http://localhost:3000
-   pnpm demo:widget   # React demo (Vite dev server)
-   ```
+```bash
+# In .env: DURABLE_STORE=mongo, MONGODB_URL=mongodb://localhost:27017/basebot
+pnpm demo:setup    # docker compose --profile mongo up -d → seed (no Postgres migrations)
+pnpm demo
+```
+
+`docker compose --profile mongo up -d` starts Postgres, Redis, and Mongo; only Mongo is used when `DURABLE_STORE=mongo`.
 
 ## Scripts
 
@@ -91,7 +98,7 @@ Use root `pnpm demo` / `pnpm demo:widget`.
 | `pnpm generate:openapi` | Regenerate `docs/openapi.yaml` |
 | `pnpm demo` | Telecom agent server (`demos/node-demo`) |
 | `pnpm migrate` | baseBot Postgres migrations |
-| `pnpm demo:setup` | Compose up + framework/demo migrate + seed (Postgres path) |
+| `pnpm demo:setup` | Compose up + migrate/seed per `DURABLE_STORE` (Postgres default; `--profile mongo` when `mongo`) |
 | `pnpm seed:demo` | Seed telecom TOML + support manual embeddings |
 | `pnpm --filter @basebot/example-node-demo run migrate:demo` | Telecom schema + pgvector (Postgres) |
 

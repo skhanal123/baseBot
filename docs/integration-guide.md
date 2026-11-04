@@ -1,6 +1,6 @@
 # baseBot integration guide
 
-PRD: **US-15** (reference demo), **US-16** (SDK bootstrap), **US-17** (demo-only domain code).
+PRD: **US-15** (reference demo), **US-16** (SDK bootstrap), **US-17** (demo-only domain code), **US-18** (local compose + setup).
 
 ## Framework vs reference product
 
@@ -21,13 +21,37 @@ Framework Postgres migrations (`001_*`) create **threads and messages only**. De
 
 ## Quick start (telecom demo, Postgres)
 
-1. Copy `.env.example` → `.env` — set `OPENAI_API_KEY`, `SERPER_API_KEY`.
+1. Copy `demos/node-demo/.env.example` → repo root `.env` — set `OPENAI_API_KEY`, `SERPER_API_KEY`.
 2. `pnpm install && pnpm build`
 3. **`pnpm demo:setup`** — `docker compose up -d` → `pnpm migrate` → demo migrate → seed  
    (Equivalent manual steps: compose up, `pnpm migrate`, `pnpm --filter @basebot/example-node-demo run migrate:demo`, `pnpm seed:demo`.)
 4. `pnpm demo` and `pnpm demo:widget`
 
 Widget default user `usr_browser_demo` maps to customer **C1001** after seeding.
+
+## Local stack (US-18)
+
+| Path | Compose | `DURABLE_STORE` | Setup |
+|------|---------|-----------------|-------|
+| **Postgres + pgvector** (recommended) | `docker compose up -d` | `postgres` (default) | `pnpm demo:setup` runs framework + demo SQL migrations, then seed |
+| **Mongo adapter** | `docker compose --profile mongo up -d` | `mongo` | `pnpm demo:setup` starts the mongo profile and runs seed only (threads/messages indexes created at server connect) |
+
+Services: **pgvector/pg16** Postgres on host port **5434**, **Redis** on **6379**, optional **Mongo 7** on **27017**.
+
+## Multi-provider chat (US-13 / US-18)
+
+Chat vendor is selected in demo env only — pass the result of `resolveLlmConfigFromEnv()` to `createServer({ llm })`:
+
+| `LLM_PROVIDER` | Required env |
+|----------------|--------------|
+| *(unset)* | `OPENAI_API_KEY` → OpenAI chat |
+| `openai` | `OPENAI_API_KEY` |
+| `gemini` | `GEMINI_API_KEY` |
+| `claude` | `ANTHROPIC_API_KEY` |
+| `deepseek` | `DEEPSEEK_API_KEY` |
+| `mock` | No chat API key (fixed mock text; `OPENAI_API_KEY` still required for seed embeddings) |
+
+Widget and REST/SSE contracts are unchanged across providers.
 
 ## SDK bootstrap (US-16)
 
