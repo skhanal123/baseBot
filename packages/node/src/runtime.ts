@@ -60,10 +60,9 @@ export class BaseBotRuntime {
 
   getLLMAdapter(): LLMAdapter {
     if (!this.llmAdapter) {
-      const hasOpenAiKey = Boolean(process.env.OPENAI_API_KEY);
-      this.llmAdapter = createLLMAdapter({
-        provider: hasOpenAiKey ? 'openai' : 'mock',
-      });
+      throw new Error(
+        'LLM is not configured: pass llm to createServer or call runtime.configureLLM()',
+      );
     }
     return this.llmAdapter;
   }

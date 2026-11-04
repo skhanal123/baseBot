@@ -25,34 +25,30 @@ export function createLLMAdapter(config: LLMConfig): LLMAdapter {
       return new MockLLMAdapter(mockOptions);
     }
     case 'openai': {
-      const apiKey = config.apiKey ?? process.env.OPENAI_API_KEY;
+      const apiKey = config.apiKey?.trim();
       if (!apiKey) {
-        throw new Error('OpenAI API key required: set OPENAI_API_KEY or pass apiKey in configureLLM');
+        throw new Error('OpenAI adapter requires apiKey in LLM config');
       }
       return new OpenAIAdapter(apiKey, config.model);
     }
     case 'gemini': {
-      const apiKey = config.apiKey ?? process.env.GEMINI_API_KEY;
+      const apiKey = config.apiKey?.trim();
       if (!apiKey) {
-        throw new Error('Gemini API key required: set GEMINI_API_KEY or pass apiKey in configureLLM');
+        throw new Error('Gemini adapter requires apiKey in LLM config');
       }
       return new GeminiAdapter(apiKey, config.model);
     }
     case 'claude': {
-      const apiKey = config.apiKey ?? process.env.ANTHROPIC_API_KEY;
+      const apiKey = config.apiKey?.trim();
       if (!apiKey) {
-        throw new Error(
-          'Claude API key required: set ANTHROPIC_API_KEY or pass apiKey in configureLLM',
-        );
+        throw new Error('Claude adapter requires apiKey in LLM config');
       }
       return new ClaudeAdapter(apiKey, config.model);
     }
     case 'deepseek': {
-      const apiKey = config.apiKey ?? process.env.DEEPSEEK_API_KEY;
+      const apiKey = config.apiKey?.trim();
       if (!apiKey) {
-        throw new Error(
-          'DeepSeek API key required: set DEEPSEEK_API_KEY or pass apiKey in configureLLM',
-        );
+        throw new Error('DeepSeek adapter requires apiKey in LLM config');
       }
       return new DeepSeekAdapter(apiKey, config.model);
     }

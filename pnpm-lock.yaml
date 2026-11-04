@@ -38,9 +38,18 @@ importers:
       '@basebot/node':
         specifier: workspace:*
         version: link:../../packages/node
+      '@iarna/toml':
+        specifier: ^2.2.5
+        version: 2.2.5
       ioredis:
         specifier: ^5.6.0
         version: 5.11.1
+      mongodb:
+        specifier: ^6.15.0
+        version: 6.22.0
+      openai:
+        specifier: ^4.86.2
+        version: 4.104.0(zod@3.25.76)
       pg:
         specifier: ^8.14.1
         version: 8.21.0
@@ -48,9 +57,15 @@ importers:
       '@types/pg':
         specifier: ^8.11.11
         version: 8.20.0
+      fastify:
+        specifier: ^5.2.1
+        version: 5.8.5
       tsx:
         specifier: ^4.19.3
         version: 4.22.4
+      vitest:
+        specifier: ^3.0.8
+        version: 3.2.6(@types/node@22.19.20)(tsx@4.22.4)(yaml@2.9.0)
 
   demos/react-demo:
     dependencies:
@@ -805,6 +820,9 @@ packages:
   '@humanwhocodes/retry@0.4.3':
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
+
+  '@iarna/toml@2.2.5':
+    resolution: {integrity: sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==}
 
   '@ioredis/commands@1.10.0':
     resolution: {integrity: sha512-UmeW7z4LfctwoQ5wkhVzgq8tXkreED2xZGpX+Bg+zA+WJFZCT6c062AfCK/Dfk81xZnnwdhJCUMkitihRaoC2Q==}
@@ -2752,6 +2770,8 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.4.3': {}
+
+  '@iarna/toml@2.2.5': {}
 
   '@ioredis/commands@1.10.0': {}
 

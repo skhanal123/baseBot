@@ -241,17 +241,11 @@ describe('LLM provider conformance suite', () => {
     expect(chunks.some((c) => c.type === 'tool_call')).toBe(true);
   });
 
-  it('createLLMAdapter resolves gemini, claude, and deepseek env keys', () => {
-    process.env.GEMINI_API_KEY = 'gemini-test';
-    process.env.ANTHROPIC_API_KEY = 'anthropic-test';
-    process.env.DEEPSEEK_API_KEY = 'deepseek-test';
+  it('createLLMAdapter requires apiKey for gemini, claude, and deepseek', () => {
+    expect(createLLMAdapter({ provider: 'gemini', apiKey: 'gemini-test' })).toBeDefined();
+    expect(createLLMAdapter({ provider: 'claude', apiKey: 'anthropic-test' })).toBeDefined();
+    expect(createLLMAdapter({ provider: 'deepseek', apiKey: 'deepseek-test' })).toBeDefined();
 
-    expect(createLLMAdapter({ provider: 'gemini' })).toBeDefined();
-    expect(createLLMAdapter({ provider: 'claude' })).toBeDefined();
-    expect(createLLMAdapter({ provider: 'deepseek' })).toBeDefined();
-
-    delete process.env.GEMINI_API_KEY;
-    delete process.env.ANTHROPIC_API_KEY;
-    delete process.env.DEEPSEEK_API_KEY;
+    expect(() => createLLMAdapter({ provider: 'gemini' })).toThrow(/apiKey/);
   });
 });

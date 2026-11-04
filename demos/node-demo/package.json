@@ -4,16 +4,25 @@
   "type": "module",
   "scripts": {
     "start": "tsx server.ts",
-    "dev": "tsx watch server.ts"
+    "dev": "tsx watch server.ts",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "seed:demo": "tsx src/seed/seed-cli.ts",
+    "migrate:demo": "tsx src/db/migrate-demo-cli.ts"
   },
   "dependencies": {
     "@basebot/core": "workspace:*",
     "@basebot/node": "workspace:*",
+    "@iarna/toml": "^2.2.5",
     "ioredis": "^5.6.0",
+    "mongodb": "^6.15.0",
+    "openai": "^4.86.2",
     "pg": "^8.14.1"
   },
   "devDependencies": {
     "@types/pg": "^8.11.11",
-    "tsx": "^4.19.3"
+    "fastify": "^5.2.1",
+    "tsx": "^4.19.3",
+    "vitest": "^3.0.8"
   }
 }

@@ -14,6 +14,8 @@
     "typecheck": "pnpm -r run typecheck",
     "generate:openapi": "pnpm --filter @basebot/core run generate:openapi",
     "migrate": "pnpm --filter @basebot/node run migrate",
+    "seed:demo": "node scripts/seed-demo-data.mjs",
+    "demo:setup": "node scripts/demo-setup.mjs",
     "demo": "pnpm --filter @basebot/example-node-demo run start",
     "demo:widget": "pnpm --filter @basebot/example-react-demo run dev"
   },

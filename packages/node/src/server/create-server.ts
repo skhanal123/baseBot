@@ -22,13 +22,26 @@ import { BaseBotRuntime } from '../runtime.js';
 import type { InProcessToolHandler } from '../tools/runner.js';
 import type { LLMConfig } from '../llm/types.js';
 
+export interface ServerToolRegistration {
+  definition: ToolDefinition;
+  handler?: InProcessToolHandler;
+}
+
 export interface CreateServerOptions {
   store: DurableStoreAdapter;
   cache: MessageCacheAdapter;
   redis: Redis;
   config?: DeepPartial<BaseBotConfig>;
-  /** HMAC secret for stream tokens. Defaults to STREAM_SIGNING_SECRET env. */
-  streamSigningSecret?: string;
+  /** Tool definitions (and optional in-process handlers) wired at bootstrap. */
+  tools?: ServerToolRegistration[];
+  /** Lifecycle hooks merged with any prior `registerHooks` calls. */
+  hooks?: HookRegistry;
+  /** LLM provider config; overrides module-global `configureLLM` when set. Required unless `configureLLM` was called first. */
+  llm?: LLMConfig;
+  /** Register product-specific routes (e.g. HTTP tool sidecar) after core routes. */
+  registerRoutes?: (app: BaseBotServer) => void | Promise<void>;
+  /** HMAC secret for stream tokens (required). */
+  streamSigningSecret: string;
   /** Start BullMQ worker in-process. Default: true */
   startWorker?: boolean;
   /** Route prefix when mounting as plugin. Default: '' */
@@ -65,11 +78,21 @@ export function configureLLM(config: LLMConfig): void {
   pendingLlmConfig = config;
 }
 
+function registerToolsOnRuntime(runtime: BaseBotRuntime, tools: PendingTool[]): void {
+  for (const { definition, handler } of tools) {
+    if (handler) {
+      runtime.toolRunner.register(definition, handler);
+    } else {
+      runtime.toolRunner.register(definition);
+    }
+  }
+}
+
 export async function createServer(options: CreateServerOptions): Promise<BaseBotServer> {
-  const secret =
-    options.streamSigningSecret ??
-    process.env.STREAM_SIGNING_SECRET ??
-    'dev-stream-secret-change-me';
+  const secret = options.streamSigningSecret.trim();
+  if (!secret) {
+    throw new Error('createServer requires a non-empty streamSigningSecret');
+  }
 
   const runtimeOptions: ConstructorParameters<typeof BaseBotRuntime>[0] = {
     store: options.store,
@@ -83,21 +106,21 @@ export async function createServer(options: CreateServerOptions): Promise<BaseBo
 
   const runtime = new BaseBotRuntime(runtimeOptions);
 
-  for (const { definition, handler } of pendingTools) {
-    if (handler) {
-      runtime.toolRunner.register(definition, handler);
-    } else {
-      runtime.toolRunner.register(definition);
-    }
+  const toolRegistrations: PendingTool[] = [...pendingTools, ...(options.tools ?? [])];
+  registerToolsOnRuntime(runtime, toolRegistrations);
+
+  const hooks: HookRegistry = { ...pendingHooks, ...(options.hooks ?? {}) };
+  if (Object.keys(hooks).length > 0) {
+    runtime.registerHooks(hooks);
   }
 
-  if (Object.keys(pendingHooks).length > 0) {
-    runtime.registerHooks(pendingHooks);
+  const llmConfig = options.llm ?? pendingLlmConfig;
+  if (!llmConfig) {
+    throw new Error(
+      'createServer requires LLM config: pass options.llm or call configureLLM() before createServer',
+    );
   }
-
-  if (pendingLlmConfig) {
-    runtime.configureLLM(pendingLlmConfig);
-  }
+  runtime.configureLLM(llmConfig);
 
   const app = Fastify({
     logger: false,
@@ -150,6 +173,10 @@ export async function createServer(options: CreateServerOptions): Promise<BaseBo
     },
     { prefix },
   );
+
+  if (options.registerRoutes) {
+    await options.registerRoutes(botServer);
+  }
 
   botServer.addHook('onClose', async () => {
     await queue.close();

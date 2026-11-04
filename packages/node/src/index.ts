@@ -23,7 +23,11 @@ export {
   registerHooks,
   configureLLM,
 } from './server/create-server.js';
-export type { CreateServerOptions, BaseBotServer } from './server/create-server.js';
+export type {
+  CreateServerOptions,
+  BaseBotServer,
+  ServerToolRegistration,
+} from './server/create-server.js';
 
 export { BaseBotRuntime } from './runtime.js';
 export type { BaseBotRuntimeOptions } from './runtime.js';
@@ -40,6 +44,10 @@ export { MockLLMAdapter } from './llm/mock-adapter.js';
 export { OpenAIAdapter } from './llm/openai-adapter.js';
 export { createLLMAdapter } from './llm/factory.js';
 export type { LLMAdapter, LLMConfig, LLMMessage, LLMChunk, LLMProvider } from './llm/types.js';
+export {
+  resolveLlmConfigFromEnv,
+} from './llm/resolve-llm-config-from-env.js';
+export type { ResolveLlmConfigFromEnvOptions } from './llm/resolve-llm-config-from-env.js';
 export { runProviderConformance, collectLLMChunks } from './llm/conformance.js';
 
 export { createStreamToken, verifyStreamToken } from './stream/stream-token.js';
