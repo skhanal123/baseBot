@@ -166,7 +166,11 @@ export async function createServer(options: CreateServerOptions): Promise<BaseBo
 
   await botServer.register(
     (scoped) => {
-      registerHealthRoutes(scoped, runtime);
+      registerHealthRoutes(scoped, {
+        runtime,
+        queue,
+        worker: botServer.worker,
+      });
       registerThreadRoutes(scoped, runtime);
       registerMessageRoutes(scoped, runtime, queue);
       registerStreamRoutes(scoped, runtime);

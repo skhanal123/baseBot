@@ -1,20 +1,39 @@
 import type { FastifyInstance } from 'fastify';
+import type { Queue } from 'bullmq';
 
+import type { TurnJobData } from '../queue/types.js';
+import type { WorkerHandle } from '../queue/worker.js';
 import type { BaseBotRuntime } from '../runtime.js';
+import { collectReadinessChecks, readinessStatus } from './health-probes.js';
+
+export interface HealthRouteOptions {
+  runtime: BaseBotRuntime;
+  queue: Queue<TurnJobData, TurnJobData>;
+  worker: WorkerHandle | null;
+}
 
 export function registerHealthRoutes(
   app: FastifyInstance,
-  runtime: BaseBotRuntime,
+  options: HealthRouteOptions,
 ): void {
-  app.get('/health', () => ({ status: 'ok' }));
+  const { runtime, queue, worker } = options;
+
+  app.get('/health', () => ({ status: 'ok' as const }));
 
   app.get('/health/ready', async (_request, reply) => {
-    try {
-      await runtime.redis.ping();
-      await runtime.store.getThread('00000000-0000-0000-0000-000000000000');
-      return { status: 'ready' };
-    } catch {
-      return reply.status(503).send({ status: 'not_ready' });
+    const checks = await collectReadinessChecks(
+      runtime.redis,
+      runtime.store,
+      queue,
+      worker,
+    );
+    const status = readinessStatus(checks);
+    const body = { status, ...checks };
+
+    if (status === 'ok') {
+      return body;
     }
+
+    return reply.status(503).send(body);
   });
 }

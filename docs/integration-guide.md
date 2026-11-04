@@ -1,6 +1,6 @@
 # baseBot integration guide
 
-PRD: **US-15** (reference demo), **US-16** (SDK bootstrap), **US-17** (demo-only domain code), **US-18** (local compose + setup).
+PRD: **US-15** (reference demo), **US-16** (SDK bootstrap), **US-17** (demo-only domain code), **US-18** (local compose + setup), **US-19** (staging soak gate).
 
 ## Framework vs reference product
 
@@ -118,6 +118,13 @@ After `pnpm demo:setup`, with `OPENAI_API_KEY` and `SERPER_API_KEY` set:
 4. **Web tool** — ask something outside seed data, e.g. *Latest FCC net neutrality news.* Expect Serper-backed snippets when the model invokes `web_search`.
 
 Cross-user check: create a thread with a different `user_id` mapped in seed (e.g. `usr_demo_sarah` → C1002) and confirm account answers differ. Framework isolation tests (`pnpm --filter @basebot/node run test`) remain unchanged and do not depend on demo schema.
+
+## Health & staging soak (US-19)
+
+- **`GET /health`** — liveness (`{ "status": "ok" }`).
+- **`GET /health/ready`** — Redis, durable store, and BullMQ workers (`worker: true` required). Returns **503** when degraded.
+- Staging gate: [ops/staging-soak-runbook.md](../ops/staging-soak-runbook.md) and `pnpm soak:monitor`.
+- Production SLA boundaries: [ops/shared-responsibility-model.md](../ops/shared-responsibility-model.md).
 
 ## Further reading
 

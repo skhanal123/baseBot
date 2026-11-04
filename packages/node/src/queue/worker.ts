@@ -64,6 +64,7 @@ export function messagesToLLM(messages: Message[]): LLMMessage[] {
 
 export interface WorkerHandle {
   close: () => Promise<void>;
+  isHealthy: () => boolean;
 }
 
 export function startWorker(
@@ -100,6 +101,7 @@ export function startWorker(
     close: async () => {
       await worker.close();
     },
+    isHealthy: () => worker.isRunning(),
   };
 }
 

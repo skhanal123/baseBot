@@ -802,7 +802,7 @@ paths:
                   - status
   /health/ready:
     get:
-      summary: Readiness probe (Redis + DB)
+      summary: Readiness probe (Redis, durable store, workers)
       tags:
         - Health
       responses:
@@ -821,10 +821,13 @@ paths:
                     type: boolean
                   database:
                     type: boolean
+                  worker:
+                    type: boolean
                 required:
                   - status
                   - redis
                   - database
+                  - worker
         "503":
           description: One or more dependencies unavailable
           content:
@@ -840,7 +843,10 @@ paths:
                     type: boolean
                   database:
                     type: boolean
+                  worker:
+                    type: boolean
                 required:
                   - status
                   - redis
                   - database
+                  - worker

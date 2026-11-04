@@ -112,4 +112,10 @@ See [docs/integration-guide.md](docs/integration-guide.md) for framework vs tele
 
 ## Load testing
 
-See `tests/load/k6-stream.js` for a k6 script against the demo API.
+See `tests/load/k6-stream.js` for a k6 script against the demo API (includes `ttft_ms` p95 threshold).
+
+## Staging soak (US-19)
+
+- Runbook: [ops/staging-soak-runbook.md](ops/staging-soak-runbook.md)
+- SLA boundaries: [ops/shared-responsibility-model.md](ops/shared-responsibility-model.md)
+- Monitor: `pnpm soak:monitor -- --base-url http://localhost:3000 --duration-hours 72 --ttft-every 60`

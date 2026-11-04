@@ -159,5 +159,15 @@ describeIntegration('createServer integration', () => {
 
     const ready = await fetch(`${baseUrl}/health/ready`);
     expect(ready.status).toBe(200);
+    const readyBody = (await ready.json()) as {
+      status: string;
+      redis: boolean;
+      database: boolean;
+      worker: boolean;
+    };
+    expect(readyBody.status).toBe('ok');
+    expect(readyBody.redis).toBe(true);
+    expect(readyBody.database).toBe(true);
+    expect(readyBody.worker).toBe(true);
   });
 });

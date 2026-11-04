@@ -6,12 +6,16 @@
  */
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { Trend } from 'k6/metrics';
+
+const ttftMs = new Trend('ttft_ms', true);
 
 export const options = {
   vus: 100,
   duration: '10m',
   thresholds: {
     http_req_duration: ['p(95)<2000'],
+    ttft_ms: ['p(95)<2000'],
   },
 };
 
@@ -34,6 +38,7 @@ export default function () {
     threadId = listRes.json('threads.0.id');
   }
 
+  const sendStarted = Date.now();
   const sendRes = http.post(
     `${baseUrl}/v1/threads/${threadId}/messages`,
     JSON.stringify({ user_id: userId, content: 'load test ping' }),
@@ -44,6 +49,10 @@ export default function () {
   const jobId = sendRes.json('job_id');
   const token = sendRes.json('stream_token');
   const streamRes = http.get(`${baseUrl}/v1/stream/${jobId}?token=${token}`);
+  const deltaIndex = streamRes.body.indexOf('event: message.delta');
+  if (deltaIndex !== -1) {
+    ttftMs.add(Date.now() - sendStarted);
+  }
   check(streamRes, {
     'stream ok': (r) => r.status === 200,
     'has message.end': (r) => r.body.includes('message.end'),

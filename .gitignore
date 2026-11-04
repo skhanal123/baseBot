@@ -9,6 +9,7 @@ coverage/
 .cursor/
 .vite/
 *.tsbuildinfo
+artifacts/soak/
 
 # Local planning docs (remove these lines to publish PRD/TDD on GitHub)
 docs/PRD.md

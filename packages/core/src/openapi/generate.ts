@@ -168,7 +168,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'get',
   path: '/health/ready',
-  summary: 'Readiness probe (Redis + DB)',
+  summary: 'Readiness probe (Redis, durable store, workers)',
   tags: ['Health'],
   responses: {
     200: {
@@ -179,6 +179,7 @@ registry.registerPath({
             status: z.literal('ok'),
             redis: z.boolean(),
             database: z.boolean(),
+            worker: z.boolean(),
           }),
         },
       },
@@ -191,6 +192,7 @@ registry.registerPath({
             status: z.literal('degraded'),
             redis: z.boolean(),
             database: z.boolean(),
+            worker: z.boolean(),
           }),
         },
       },
