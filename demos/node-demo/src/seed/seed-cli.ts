@@ -8,7 +8,8 @@ import { runMigrations } from '@basebot/node';
 import { runDemoMigrations } from '../db/run-demo-migrations.js';
 import { seedDemoData } from './seed.js';
 
-const seedDir = resolve(process.env.SEED_DATA_DIR ?? defaultSeedDir());
+const seedDataDir = process.env.SEED_DATA_DIR?.trim();
+const seedDir = seedDataDir ? resolve(seedDataDir) : defaultSeedDir();
 const store = (process.env.DURABLE_STORE ?? 'postgres').trim().toLowerCase();
 const databaseUrl = process.env.DATABASE_URL ?? 'postgres://basebot:basebot@localhost:5434/basebot';
 const mongoUrl = process.env.MONGODB_URL ?? 'mongodb://localhost:27017/basebot';

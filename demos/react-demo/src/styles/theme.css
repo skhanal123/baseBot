@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --nm-font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --nm-primary: #0d9488;
+  --nm-primary-dark: #0f766e;
+  --nm-primary-soft: #ccfbf1;
+  --nm-ink: #0f172a;
+  --nm-ink-muted: #475569;
+  --nm-ink-subtle: #64748b;
+  --nm-border: #e2e8f0;
+  --nm-surface: #ffffff;
+  --nm-bg: #f1f5f9;
+  --nm-bg-hero: linear-gradient(165deg, #f0fdfa 0%, #f8fafc 45%, #f1f5f9 100%);
+  --nm-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --nm-shadow-md: 0 8px 30px rgba(15, 23, 42, 0.08);
+  --nm-shadow-lg: 0 16px 48px rgba(15, 23, 42, 0.12);
+  --nm-radius: 10px;
+  --nm-radius-pill: 999px;
+  --nm-nav-height: 72px;
+  --nm-max-width: 1120px;
+  --nm-screen-gutter: 24px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--nm-font);
+  color: var(--nm-ink);
+  background: var(--nm-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}

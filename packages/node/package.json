@@ -15,7 +15,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && node --input-type=module -e \"import { cpSync } from 'node:fs'; cpSync('src/adapters/postgres/migrations', 'dist/adapters/postgres/migrations', { recursive: true })\"",
+    "build": "tsc -p tsconfig.build.json && node --input-type=module -e \"import { cpSync, rmSync } from 'node:fs'; rmSync('dist/adapters/postgres/migrations', { recursive: true, force: true }); cpSync('src/adapters/postgres/migrations', 'dist/adapters/postgres/migrations', { recursive: true })\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src",
     "test": "vitest run",

@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "pnpm -r run build",
-    "test": "pnpm -r run test && node --test scripts/lib/demo-setup-plan.test.mjs scripts/lib/soak-uptime.test.mjs",
+    "test": "pnpm -r run test && node --test scripts/lib/demo-setup-plan.test.mjs scripts/lib/load-repo-env.test.mjs scripts/lib/soak-uptime.test.mjs",
     "soak:monitor": "node scripts/soak-monitor.mjs",
     "lint": "pnpm -r run lint",
     "typecheck": "pnpm -r run typecheck",

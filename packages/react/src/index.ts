@@ -1,4 +1,4 @@
-export { BaseBotChat } from './BaseBotChat.js';
+export { BaseBotChat, truncateThreadTitle } from './BaseBotChat.js';
 export type { BaseBotChatProps } from './BaseBotChat.js';
 export { BaseBotClient } from './api/client.js';
 export type {

@@ -14,6 +14,7 @@ import { Pool } from 'pg';
 
 import { loadDemoConfig, type DemoConfig } from '../config/load-demo-config.js';
 import { runDemoMigrations } from '../db/run-demo-migrations.js';
+import { registerDemoContextRoutes } from '../routes/demo-context.js';
 import {
   getTelecomToolRegistrations,
   registerTelecomToolHttpRoutes,
@@ -114,11 +115,12 @@ export async function createDemoApplication(
     tools: getTelecomToolRegistrations(telecomToolOptions),
   };
 
-  if (config.toolsHttp) {
-    serverOptions.registerRoutes = (server) => {
+  serverOptions.registerRoutes = (server) => {
+    registerDemoContextRoutes(server, telecomBackend);
+    if (config.toolsHttp) {
       registerTelecomToolHttpRoutes(server, telecomToolOptions);
-    };
-  }
+    }
+  };
 
   const app = await createServer(serverOptions);
 

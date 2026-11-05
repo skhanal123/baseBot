@@ -7,8 +7,11 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { planDemoSetup } from './lib/demo-setup-plan.mjs';
+import { loadRepoEnv } from './lib/load-repo-env.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+loadRepoEnv(process.env, { repoRoot });
 
 function run(command, args) {
   const result = spawnSync(command, args, {

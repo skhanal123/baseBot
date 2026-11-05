@@ -1,3 +1,4 @@
+import './src/bootstrap/load-repo-dotenv.js';
 import { createDemoApplication } from './src/bootstrap/create-demo-application.js';
 
 const { app, redis, onShutdown, port, durableStore, toolsMode } = await createDemoApplication();

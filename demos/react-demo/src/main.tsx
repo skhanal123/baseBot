@@ -2,6 +2,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { App } from './App.js';
+import './styles/theme.css';
+import './styles/nano-mobility.css';
 
 const root = document.getElementById('root');
 if (!root) {

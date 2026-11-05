@@ -9,6 +9,14 @@ export interface BaseBotChatProps {
   apiBaseUrl: string;
   threadId?: string;
   transport?: 'sse' | 'websocket';
+  /** When false, aborts any active stream (e.g. floating widget minimized). */
+  active?: boolean;
+  /** When true, chat fills parent height (embedded panel). */
+  fillHeight?: boolean;
+  /** Host-provided titles for thread picker (e.g. demo localStorage). */
+  getThreadTitle?: (threadId: string) => string | undefined;
+  /** Called on first user message in a thread when no title exists yet. */
+  onThreadTitle?: (threadId: string, firstUserMessage: string) => void;
   onThreadCreated?: (threadId: string) => void;
   onError?: (error: BaseBotErrorBody) => void;
 }
@@ -93,11 +101,33 @@ const styles = {
   },
 };
 
+const DEFAULT_THREAD_LABEL = 'New conversation';
+
+function threadLabel(
+  threadId: string,
+  getThreadTitle?: (threadId: string) => string | undefined,
+): string {
+  const title = getThreadTitle?.(threadId)?.trim();
+  return title && title.length > 0 ? title : DEFAULT_THREAD_LABEL;
+}
+
+export function truncateThreadTitle(text: string, maxLength = 48): string {
+  const normalized = text.replace(/\s+/g, ' ').trim();
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+  return `${normalized.slice(0, maxLength - 1)}…`;
+}
+
 export function BaseBotChat({
   userId,
   apiBaseUrl,
   threadId: initialThreadId,
   transport = 'sse',
+  active = true,
+  fillHeight = false,
+  getThreadTitle,
+  onThreadTitle,
   onThreadCreated,
   onError,
 }: BaseBotChatProps) {
@@ -135,10 +165,10 @@ export function BaseBotChat({
     setThreads(
       list.map((t) => ({
         id: t.id,
-        label: `Thread ${t.id.slice(0, 8)}…`,
+        label: threadLabel(t.id, getThreadTitle),
       })),
     );
-  }, [client, userId]);
+  }, [client, userId, getThreadTitle]);
 
   const loadMessages = useCallback(
     async (tid: string) => {
@@ -171,7 +201,7 @@ export function BaseBotChat({
         setThreads(
           list.map((t) => ({
             id: t.id,
-            label: `Thread ${t.id.slice(0, 8)}…`,
+            label: threadLabel(t.id, getThreadTitle),
           })),
         );
 
@@ -196,7 +226,7 @@ export function BaseBotChat({
             setThreads(
               updated.map((t) => ({
                 id: t.id,
-                label: `Thread ${t.id.slice(0, 8)}…`,
+                label: threadLabel(t.id, getThreadTitle),
               })),
             );
           }
@@ -222,7 +252,22 @@ export function BaseBotChat({
     return () => {
       guard.cancelled = true;
     };
-  }, [userId, client, initialThreadId, sessionThreadKey, loadMessages]);
+  }, [userId, client, initialThreadId, sessionThreadKey, loadMessages, getThreadTitle]);
+
+  useEffect(() => {
+    setThreads((prev) =>
+      prev.map((t) => ({
+        ...t,
+        label: threadLabel(t.id, getThreadTitle),
+      })),
+    );
+  }, [getThreadTitle]);
+
+  useEffect(() => {
+    if (!active) {
+      abortStream();
+    }
+  }, [active, abortStream]);
 
   useEffect(() => {
     return () => {
@@ -243,6 +288,14 @@ export function BaseBotChat({
 
     const userMsgId = `local_${String(Date.now())}`;
     setMessages((prev) => [...prev, { id: userMsgId, role: 'user', content }]);
+
+    if (onThreadTitle && !getThreadTitle?.(activeThreadId)?.trim()) {
+      onThreadTitle(activeThreadId, content);
+      const label = truncateThreadTitle(content);
+      setThreads((prev) =>
+        prev.map((t) => (t.id === activeThreadId ? { ...t, label } : t)),
+      );
+    }
 
     try {
       const result = await client.sendMessage(activeThreadId, userId, content);
@@ -346,8 +399,12 @@ export function BaseBotChat({
     return <div style={{ padding: 16, color: '#dc2626' }}>{initError}</div>;
   }
 
+  const containerStyle = fillHeight
+    ? { ...styles.container, maxHeight: 'none' as const, height: '100%' }
+    : styles.container;
+
   return (
-    <div style={styles.container} data-testid="basebot-chat">
+    <div style={containerStyle} data-testid="basebot-chat">
       <div style={styles.header}>
         <select
           style={styles.threadSelect}

@@ -63,30 +63,13 @@ pnpm demo          # Node API on http://localhost:3000
 pnpm demo:widget   # React widget (Vite)
 ```
 
-In the widget, send a message (for example *What is my current plan?*) and confirm a **streamed reply** with **tool calls** (CRM / support manual / web search). Sample prompts: [integration guide — E2E verification](docs/integration-guide.md#e2e-tool-verification-manual).
+In the widget, send a message (for example *What is my current plan?*) and confirm a **streamed reply** with **tool calls** (CRM / support manual / web search). Sample prompts: [integration guide — E2E verification](docs/integration-guide.md#manual-smoke-check).
 
-### Environment (demo only)
+### Showcase demo
 
-`@basebot/node` does not read deployment env vars; the telecom demo uses `loadDemoConfig()` and `resolveLlmConfigFromEnv()`. See `demos/node-demo/.env.example` for:
+`pnpm demo:widget` serves **Nano Mobility** (`demos/react-demo`): a sample host page with account-scoped support chat. More prompts: [integration guide](docs/integration-guide.md#manual-smoke-check).
 
-| Variable | Purpose |
-|----------|---------|
-| `OPENAI_API_KEY` | Embeddings + default chat (`LLM_PROVIDER` unset) |
-| `SERPER_API_KEY` | `web_search` tool |
-| `LLM_PROVIDER` | Optional: `openai`, `gemini`, `claude`, `deepseek`, or `mock` (no live chat key) |
-| `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `DEEPSEEK_API_KEY` | Required when matching `LLM_PROVIDER` is set |
-
-### Mongo durable store (optional)
-
-Local **vector** demos should stay on Postgres (pgvector). To exercise the **Mongo thread/message adapter** and telecom CRM on Mongo:
-
-```bash
-# In .env: DURABLE_STORE=mongo, MONGODB_URL=mongodb://localhost:27017/basebot
-pnpm demo:setup    # docker compose --profile mongo up -d → seed (no Postgres migrations)
-pnpm demo
-```
-
-`docker compose --profile mongo up -d` starts Postgres, Redis, and Mongo; only Mongo is used when `DURABLE_STORE=mongo`.
+![Nano Mobility showcase — host app with floating support chat](demos/sampleOutput.png)
 
 ## Scripts
 
@@ -113,9 +96,3 @@ See [docs/integration-guide.md](docs/integration-guide.md) for framework vs tele
 ## Load testing
 
 See `tests/load/k6-stream.js` for a k6 script against the demo API (includes `ttft_ms` p95 threshold).
-
-## Staging soak (US-19)
-
-- Runbook: [ops/staging-soak-runbook.md](ops/staging-soak-runbook.md)
-- SLA boundaries: [ops/shared-responsibility-model.md](ops/shared-responsibility-model.md)
-- Monitor: `pnpm soak:monitor -- --base-url http://localhost:3000 --duration-hours 72 --ttft-every 60`
